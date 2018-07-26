@@ -33,5 +33,5 @@ spec:
                 secretKeyRef:
                   name: slack-secret
                   key: slackChannelID
-            - name: SIMPLE_MSG
+            - name: HOME_MSG
               value: "Hello slack app for Knative!!"

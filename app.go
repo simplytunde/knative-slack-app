@@ -18,26 +18,22 @@ type ContentBody struct {
 	Message string `json:"msg"`
 }
 
-var (
-	slackToken     = os.Getenv("SLACK_TOKENE")
-	slackChannelID = os.Getenv("SLACK_CHANNEL_ID")
-)
-
 func sendSlackMessage(msg string) error {
-	api := slack.New(slackToken)
+	api := slack.New(os.Getenv("SLACK_TOKENE"))
 	api.SetDebug(false)
 	params := slack.PostMessageParameters{}
-	channelID, timestamp, err := api.PostMessage(slackChannelID, msg, params)
+	channelID, timestamp, err := api.PostMessage(os.Getenv("SLACK_CHANNEL_ID"), msg, params)
 	if err != nil {
-		log.Printf("%s\n", err)
+		log.Printf("[SLACK] %s\n", err)
 		return fmt.Errorf("Failed to send message: %s", err)
 	}
 	log.Printf("[SLACK] Message successfully sent to channel %s at %s", channelID, timestamp)
 	return nil
 }
 
-func sendMessageHandler(w http.ResponseWriter, r *http.Request) {
-	if r.Method == http.MethodPost {
+func httpHandler(w http.ResponseWriter, r *http.Request) {
+	switch r.Method {
+	case http.MethodPost:
 		body, err := ioutil.ReadAll(r.Body)
 		if err != nil {
 			http.Error(w, "Error reading request body", http.StatusInternalServerError)
@@ -55,21 +51,19 @@ func sendMessageHandler(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 
-		log.Printf("[POST] send message %s to slack...\n", c.Message)
+		log.Printf("[POST] send message \"%s\" to slack...\n", c.Message)
 		if err := sendSlackMessage(c.Message); err != nil {
 			http.Error(w, "Error reading request body", http.StatusInternalServerError)
 			return
 		}
 		fmt.Fprint(w, "success")
+	case http.MethodGet:
+		msg := os.Getenv("HOME_MSG")
+		if msg == "" {
+			msg = ":( HOME_MSG variable not defined"
+		}
+		fmt.Fprintf(w, "<h1>%s</h1>", msg)
 	}
-}
-
-func getMessageHandler(w http.ResponseWriter, r *http.Request) {
-	msg := os.Getenv("SIMPLE_MSG")
-	if msg == "" {
-		msg = ":( SIMPLE_MSG variable not defined"
-	}
-	fmt.Fprintf(w, "<h1>%s</h1>", msg)
 }
 
 func main() {
@@ -77,8 +71,7 @@ func main() {
 	flag.Parse()
 
 	mux := http.NewServeMux()
-	mux.HandleFunc("/say", sendMessageHandler)
-	mux.HandleFunc("/", getMessageHandler)
+	mux.HandleFunc("/", httpHandler)
 
 	log.Printf("Knative slack app start to listen on %s ...", *addr)
 	http.ListenAndServe(*addr, mux)
