@@ -1,0 +1,36 @@
+apiVersion: serving.knative.dev/v1alpha1
+kind: Service
+metadata:
+  name: slack-app
+  namespace: default
+spec:
+  runLatest:
+    configuration:
+      build:
+        source:
+          git:
+            url: https://github.com/kairen/knative-slack-app.git
+            revision: master
+        template:
+          name: kaniko
+          arguments:
+          - name: IMAGE
+            value: &image docker.io/kairen/knative-slack-app:latest
+      revisionTemplate:
+        spec:
+          container:
+            image: *image
+            imagePullPolicy: Always
+            env:
+            - name: SLACK_TOKENE
+              valueFrom:
+                secretKeyRef:
+                  name: slack-secret
+                  key: slackToken
+            - name: SLACK_CHANNEL_ID
+              valueFrom:
+                secretKeyRef:
+                  name: slack-secret
+                  key: slackChannelID
+            - name: SIMPLE_MSG
+              value: "Hello slack app for Knative!!"
