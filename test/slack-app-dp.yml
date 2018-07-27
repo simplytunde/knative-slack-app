@@ -1,0 +1,33 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: slack-app
+  namespace: default
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: slack-app
+  template:
+    metadata:
+      labels:
+        app: slack-app
+    spec:
+      containers:
+      - name: slack-app
+        image: docker.io/kairen/knative-slack-app:latest
+        env:
+        - name: SLACK_TOKEN
+          valueFrom:
+            secretKeyRef:
+              name: slack-secret
+              key: slackToken
+        - name: SLACK_CHANNEL_ID
+          valueFrom:
+            secretKeyRef:
+              name: slack-secret
+              key: slackChannelID
+        - name: HOME_MSG
+          value: "Hello slack app for Knative!!"
+        ports:
+        - containerPort: 8080

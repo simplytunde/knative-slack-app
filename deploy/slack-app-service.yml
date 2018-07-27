@@ -2,7 +2,6 @@ apiVersion: serving.knative.dev/v1alpha1
 kind: Service
 metadata:
   name: slack-app
-  namespace: default
 spec:
   runLatest:
     configuration:
@@ -23,6 +22,8 @@ spec:
             image: *image
             imagePullPolicy: Always
             env:
+            - name: HOME_MSG
+              value: "Hello slack app for Knative!!"
             - name: SLACK_TOKEN
               valueFrom:
                 secretKeyRef:
@@ -33,5 +34,3 @@ spec:
                 secretKeyRef:
                   name: slack-secret
                   key: slackChannelID
-            - name: HOME_MSG
-              value: "Hello slack app for Knative!!"
