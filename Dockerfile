@@ -6,6 +6,7 @@ RUN go get -u github.com/golang/dep/cmd/dep && \
  CGO_ENABLED=0 GOOS=linux go build -v -o app && \
  mv app /tmp/app
 
-FROM alpine
+FROM alpine:3.7
+RUN apk --no-cache add ca-certificates curl && rm -rf /var/cache/apk/*
 COPY --from=0 /tmp/app /bin/app
 ENTRYPOINT ["app"]

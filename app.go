@@ -19,8 +19,8 @@ type ContentBody struct {
 }
 
 func sendSlackMessage(msg string) error {
-	api := slack.New(os.Getenv("SLACK_TOKENE"))
-	api.SetDebug(false)
+	api := slack.New(os.Getenv("SLACK_TOKEN"))
+	api.SetDebug(true)
 	params := slack.PostMessageParameters{}
 	channelID, timestamp, err := api.PostMessage(os.Getenv("SLACK_CHANNEL_ID"), msg, params)
 	if err != nil {

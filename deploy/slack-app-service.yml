@@ -23,7 +23,7 @@ spec:
             image: *image
             imagePullPolicy: Always
             env:
-            - name: SLACK_TOKENE
+            - name: SLACK_TOKEN
               valueFrom:
                 secretKeyRef:
                   name: slack-secret
