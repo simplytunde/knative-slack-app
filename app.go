@@ -62,7 +62,12 @@ func httpHandler(w http.ResponseWriter, r *http.Request) {
 		if msg == "" {
 			msg = ":( HOME_MSG variable not defined"
 		}
-		fmt.Fprintf(w, "<h1>%s</h1>", msg)
+	        log.Printf("send message \"%s\" to slack...\n", msg)
+		if err := sendSlackMessage(msg); err != nil {
+			http.Error(w, "Error reading request body", http.StatusInternalServerError)
+			return
+		}
+		fmt.Fprint(w, "success")
 	}
 }
 
